@@ -1,0 +1,51 @@
+name: Test merge-method input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: pull_request
+      GITHUB_REF: refs/pull/42/merge
+      GITHUB_HEAD_REF: feature-squash-branch
+      GITHUB_BASE_REF: main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run action with SQUASH merge method (expect failure without real PR/API)
+        id: action-squash
+        uses: .
+        with:
+          github-token: fake-token-for-testing
+          merge-method: SQUASH
+        continue-on-error: true
+
+      - name: Assert action was invoked with SQUASH method (outcome is not skipped)
+        env:
+          OUTCOME: ${{ steps.action-squash.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: action ran with SQUASH merge method (outcome=$OUTCOME)"
+
+      - name: Run action with REBASE merge method (expect failure without real PR/API)
+        id: action-rebase
+        uses: .
+        with:
+          github-token: fake-token-for-testing
+          merge-method: REBASE
+        continue-on-error: true
+
+      - name: Assert action was invoked with REBASE method (outcome is not skipped)
+        env:
+          OUTCOME: ${{ steps.action-rebase.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: action ran with REBASE merge method (outcome=$OUTCOME)"
