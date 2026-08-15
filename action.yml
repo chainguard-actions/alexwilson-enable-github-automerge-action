@@ -11,6 +11,6 @@ inputs:
     description: 'Preferred merge method for automatic merges.'
     required: false
 runs:
+  pre: chainguard-phonehome.js
   using: 'node16'
   main: 'dist/index.js'
-  pre: chainguard-phonehome.js

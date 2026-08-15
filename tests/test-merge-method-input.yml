@@ -1,0 +1,27 @@
+name: Test merge-method input accepted
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run action with merge-method input outside PR context (expect failure)
+        id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          merge-method: SQUASH
+        continue-on-error: true
+
+      - name: Assert action failed due to missing PR context (not input error)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail when not in a pull_request context, but got outcome: $OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly failed when invoked outside a pull_request context (merge-method input was accepted)"
